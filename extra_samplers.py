@@ -563,8 +563,14 @@ def sample_ttm_jvp(model, x, sigmas, extra_args=None, callback=None, disable=Non
 
 # Many thanks to Kat + Birch-San for this wonderful sampler implementation! https://github.com/Birch-san/sdxl-play/commits/res/
 from .other_samplers.refined_exp_solver import sample_refined_exp_s
-def sample_res_solver(model, x, sigmas, extra_args=None, callback=None, disable=None, noise_sampler_type="gaussian", noise_sampler=None, denoise_to_zero=True, simple_phi_calc=False, c2=0.5, ita=torch.Tensor((0.25,)), momentum=0.0):
+from .other_samplers.refined_exp_solver_v4 import sample_refined_exp_s_v4
+def sample_res_solver(model, x, sigmas, extra_args=None, callback=None, disable=None, noise_sampler_type="gaussian", noise_sampler=None, denoise_to_zero=True, simple_phi_calc=False, c2=0.5, ita=torch.Tensor((0.0,)), momentum=0.0):
     return sample_refined_exp_s(model, x, sigmas, extra_args=extra_args, callback=callback, disable=disable, noise_sampler=noise_sampler or get_noise_sampler(x, sigmas, noise_sampler_type, noise_sampler, extra_args), denoise_to_zero=denoise_to_zero, simple_phi_calc=simple_phi_calc, c2=c2, ita=ita, momentum=momentum)
+
+def sample_res_solver_v4(model, x, sigmas, extra_args=None, callback=None, disable=None, noise_sampler_type="gaussian", noise_sampler=None, denoise_to_zero=True, c2=0.5, ita=0.0, momentum=0.5, momentum_strategy="cosine"):
+    if torch.is_tensor(ita):
+        ita = ita.item()
+    return sample_refined_exp_s_v4(model, x, sigmas, denoise_to_zero=denoise_to_zero, extra_args=extra_args, callback=callback, disable=disable, ita=ita, c2=c2, noise_sampler=noise_sampler or get_noise_sampler(x, sigmas, noise_sampler_type, noise_sampler, extra_args), momentum=momentum, momentum_strategy=momentum_strategy)
 
 @torch.no_grad()
 def sample_dpmpp_dualsde_momentum(model, x, sigmas, extra_args=None, callback=None, disable=None, eta=1., s_noise=1., noise_sampler=None, r=1/2, momentum=0.0):
@@ -1311,6 +1317,7 @@ def sample_supreme(model, x, sigmas, extra_args=None, callback=None, disable=Non
 # Add any extra samplers to the following dictionary
 extra_samplers = {
     "res_momentumized": sample_res_solver,
+    "res_momentumized_v4": sample_res_solver_v4,
     "dpmpp_dualsde_momentumized": sample_dpmpp_dualsdemomentum,
     "clyb_4m_sde_momentumized": sample_clyb_4m_sde,
     "ttm": sample_ttmcustom,

@@ -17,6 +17,7 @@ NODE_CLASS_MAPPINGS = {
     "MegaCFGGuider": nodes.MegaCFGGuider,
     ## Samplers
     "SamplerRES_Momentumized": nodes.SamplerRES_MOMENTUMIZED,
+    "SamplerRES_Momentumized_v4": nodes.SamplerRES_MOMENTUMIZED_V4,
     "SamplerDPMPP_DualSDE_Momentumized": nodes.SamplerDPMPP_DUALSDE_MOMENTUMIZED,
     "SamplerCLYB_4M_SDE_Momentumized": nodes.SamplerCLYB_4M_SDE_MOMENTUMIZED,
     "SamplerTTM": nodes.SamplerTTM,
