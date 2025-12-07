@@ -138,7 +138,7 @@ def _refined_exp_sosu_step(
     a2_1, b1, b2 = _de_second_order(h, c2)
     
     # 3. Stage 1: Denoise at sigma
-    denoised = model(x, sigma, **extra_args)
+    denoised = model(x, sigma.view(1), **extra_args)
     if pbar: pbar.update(0.5)
 
     # 4. Stage 1: Update to intermediate x_2
@@ -157,7 +157,7 @@ def _refined_exp_sosu_step(
     lam_2 = lam + c2_h
     sigma_2 = (-lam_2).exp()
     
-    denoised2 = model(x_2, sigma_2, **extra_args)
+    denoised2 = model(x_2, sigma_2.view(1), **extra_args)
     if pbar: pbar.update(0.5)
 
     # 6. Stage 2: Final Update to x_next
@@ -201,6 +201,12 @@ def sample_refined_exp_s_v4(
     sigma_min, sigma_max = sigmas[sigmas > 0].min(), sigmas.max()
     sigma_max_val = sigma_max.item()
 
+    # Normalize noise sampler interface
+    if noise_sampler is torch.randn_like:
+        _noise_sampler = lambda sigma, sigma_next: noise_sampler(x)
+    else:
+        _noise_sampler = noise_sampler
+
     # Trackers for the two RES stages
     m_tracker_1 = MomentumTracker(momentum, momentum_strategy)
     m_tracker_2 = MomentumTracker(momentum, momentum_strategy)
@@ -215,7 +221,7 @@ def sample_refined_exp_s_v4(
             
             # Stochastic Injection (Euler-Ancestral style)
             if ita > 0:
-                eps = noise_sampler(x)
+                eps = _noise_sampler(sigma, sigma_next)
                 sigma_hat = sigma * (1 + ita)
                 noise_scale = (sigma_hat.square() - sigma.square()).sqrt()
                 x = x + noise_scale * eps
@@ -246,13 +252,13 @@ def sample_refined_exp_s_v4(
         
         # Consistent stochasticity check
         if ita > 0:
-            eps = noise_sampler(x)
+            eps = _noise_sampler(last_sigma, sigmas[-1])
             sigma_hat = last_sigma * (1 + ita)
             noise_scale = (sigma_hat.square() - last_sigma.square()).sqrt()
             x = x + noise_scale * eps
             last_sigma = sigma_hat
 
-        x = model(x, last_sigma, **extra_args)
+        x = model(x, last_sigma.view(1), **extra_args)
         
         if pbar: pbar.update(1)
             
