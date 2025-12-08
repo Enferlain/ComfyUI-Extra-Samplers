@@ -211,6 +211,8 @@ def sample_refined_exp_s_v4(
     m_tracker_1 = MomentumTracker(momentum, momentum_strategy)
     m_tracker_2 = MomentumTracker(momentum, momentum_strategy)
 
+    brownian_fallback = False
+
     # Pbar calculation: (N-1) steps * 1.0 (split into two 0.5s) + 1.0 if final denoise
     total_steps = len(sigmas) - (1 if denoise_to_zero else 2)
     
@@ -221,7 +223,16 @@ def sample_refined_exp_s_v4(
             
             # Stochastic Injection (Euler-Ancestral style)
             if ita > 0:
-                eps = _noise_sampler(sigma, sigma_next)
+                if not brownian_fallback:
+                    try:
+                        eps = _noise_sampler(sigma, sigma_next)
+                    except RecursionError:
+                        # Fallback for Brownian noise sampler on problematic schedules
+                        print("RESv4: Brownian noise sampler recursion limit hit, falling back to Gaussian noise for this step.")
+                        eps = torch.randn_like(x)
+                        brownian_fallback = True
+                else:
+                    eps = torch.randn_like(x)
                 sigma_hat = sigma * (1 + ita)
                 noise_scale = (sigma_hat.square() - sigma.square()).sqrt()
                 x = x + noise_scale * eps
@@ -252,7 +263,15 @@ def sample_refined_exp_s_v4(
         
         # Consistent stochasticity check
         if ita > 0:
-            eps = _noise_sampler(last_sigma, sigmas[-1])
+            if not brownian_fallback:
+                try:
+                    eps = _noise_sampler(last_sigma, sigmas[-1])
+                except RecursionError:
+                    # Fallback for Brownian noise sampler on problematic schedules
+                    print("RESv4: Brownian noise sampler recursion limit hit, falling back to Gaussian noise for this step.")
+                    eps = torch.randn_like(x)
+            else:
+                eps = torch.randn_like(x)
             sigma_hat = last_sigma * (1 + ita)
             noise_scale = (sigma_hat.square() - last_sigma.square()).sqrt()
             x = x + noise_scale * eps
