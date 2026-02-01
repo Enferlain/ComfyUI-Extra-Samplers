@@ -1,3 +1,7 @@
+In this fork: Added a res version with some changes
+
+---
+
 # ComfyUI Extra Samplers
 
 ### Currently included extra samplers: 
