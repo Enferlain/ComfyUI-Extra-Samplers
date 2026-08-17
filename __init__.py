@@ -18,6 +18,8 @@ NODE_CLASS_MAPPINGS = {
     ## Samplers
     "SamplerRES_Momentumized": nodes.SamplerRES_MOMENTUMIZED,
     "SamplerRES_Momentumized_v4": nodes.SamplerRES_MOMENTUMIZED_V4,
+    "SamplerRES_Momentumized_v5": nodes.SamplerRES_MOMENTUMIZED_V5,
+    "SamplerRES_Momentumized_v6": nodes.SamplerRES_MOMENTUMIZED_V6,
     "SamplerDPMPP_DualSDE_Momentumized": nodes.SamplerDPMPP_DUALSDE_MOMENTUMIZED,
     "SamplerCLYB_4M_SDE_Momentumized": nodes.SamplerCLYB_4M_SDE_MOMENTUMIZED,
     "SamplerTTM": nodes.SamplerTTM,

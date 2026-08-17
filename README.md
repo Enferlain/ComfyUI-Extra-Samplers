@@ -1,5 +1,51 @@
 # ComfyUI Extra Samplers
 
+samplerres_exp_v4 noise_sampler practical take:
+
+- `gaussian`: safest general-purpose choice. Best baseline if you want predictable behavior.
+- `brownian`: often the best choice for true ancestral/SDE-style sampling, because it preserves noise continuity across sigma steps instead of drawing unrelated noise each time.
+- `uniform`: can feel a little flatter or broader; worth testing if gaussian feels too conventional.
+- `perlin`, `pyramid`, `highres-pyramid`: more “structured” noise. These can help texture, grain, or large-scale patterning, but they are easier to overdo and can bias the image.
+- `laplacian`: heavier-tailed, so it can make things punchier or rougher, but also less stable.
+
+So if you want a rule of thumb:
+
+- For quality/stability tests: start with `gaussian`.
+- For SDE/ancestral behavior tests: try `brownian` first.
+- For stylized texture experiments: try `perlin` or `highres-pyramid`.
+- For low CFG or fragile models: stay with `gaussian` or `brownian`.
+
+Rest of the settings:
+
+- `v-prediction` / `ztsnr`:
+  Start conservative. `momentum=0.35-0.55`, `momentum_strategy=cosine`, `c2=0.5`, `ita=0.0-0.08`, `denoise_to_zero=true`.
+  Reason: ztsnr already changes end-of-schedule behavior, so piling on too much extra stochasticity often makes the tail less stable than it needs to be.
+- `RF` / flow-matching:
+  Start even more conservative. `momentum=0.15-0.35`, `momentum_strategy=linear` or `static`, `c2=0.5`, `ita=0.0` first.
+  If you want more texture, raise `ita` only a little, like `0.02-0.05`. so I’d treat that as experimental and not push it hard.
+
+A good default mental model is:
+
+- `momentum` controls how much the sampler “leans into” its previous update.
+- `c2` controls the midpoint of the 2-stage step. `0.5` is the safe default.
+- `ita` controls stochasticity. If `ita=0`, the run is deterministic and `noise_sampler_type` won’t matter.
+- `noise_sampler_type` only matters once `ita > 0`.
+
+My practical presets would be:
+
+- For `v-pred + ztsnr`: `momentum 0.45`, `cosine`, `c2 0.5`, `ita 0.00` to start, then `0.03-0.06` if you want a little more liveliness.
+- For `RF`: `momentum 0.25`, `linear`, `c2 0.5`, `ita 0.00` to start, then only tiny `ita` increases if the model tolerates it.
+
+Symptoms help a lot too:
+
+- If you get ringing, double edges, or overshoot: lower `momentum`.
+- If the image feels too locked-in or sterile: raise `ita` a bit.
+- If the end of the sample gets unstable or crunchy: lower `ita` first, especially on ztsnr and RF.
+- If behavior changes wildly with small tweaks: go back to `c2=0.5`.
+
+---
+
+
 ### Currently included extra samplers: 
 * RES (+ Somewhat naively momentumized and modified, thanks to Kat and Birch-San for the source implementation!)
 * DPMPP Dual SDE (+ Somewhat naively momentumized, tis simply DPMPP SDE with an added SDE akin to how 3M samples)

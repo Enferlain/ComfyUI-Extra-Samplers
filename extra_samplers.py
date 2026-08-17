@@ -564,13 +564,25 @@ def sample_ttm_jvp(model, x, sigmas, extra_args=None, callback=None, disable=Non
 # Many thanks to Kat + Birch-San for this wonderful sampler implementation! https://github.com/Birch-san/sdxl-play/commits/res/
 from .other_samplers.refined_exp_solver import sample_refined_exp_s
 from .other_samplers.refined_exp_solver_v4 import sample_refined_exp_s_v4
+from .other_samplers.refined_exp_solver_v5 import sample_refined_exp_s_v5
+from .other_samplers.refined_exp_solver_v6 import sample_refined_exp_s_v6
 def sample_res_solver(model, x, sigmas, extra_args=None, callback=None, disable=None, noise_sampler_type="gaussian", noise_sampler=None, denoise_to_zero=True, simple_phi_calc=False, c2=0.5, ita=torch.Tensor((0.0,)), momentum=0.0):
-    return sample_refined_exp_s(model, x, sigmas, extra_args=extra_args, callback=callback, disable=disable, noise_sampler=noise_sampler or get_noise_sampler(x, sigmas, noise_sampler_type, noise_sampler, extra_args), denoise_to_zero=denoise_to_zero, simple_phi_calc=simple_phi_calc, c2=c2, ita=ita, momentum=momentum)
+    return sample_refined_exp_s(model, x, sigmas, extra_args=extra_args, callback=callback, disable=disable, noise_sampler=noise_sampler or get_noise_sampler(x, sigmas, noise_sampler_type=noise_sampler_type, extra_args=extra_args), denoise_to_zero=denoise_to_zero, simple_phi_calc=simple_phi_calc, c2=c2, ita=ita, momentum=momentum)
 
 def sample_res_solver_v4(model, x, sigmas, extra_args=None, callback=None, disable=None, noise_sampler_type="gaussian", noise_sampler=None, denoise_to_zero=True, c2=0.5, ita=0.0, momentum=0.5, momentum_strategy="cosine"):
     if torch.is_tensor(ita):
         ita = ita.item()
-    return sample_refined_exp_s_v4(model, x, sigmas, denoise_to_zero=denoise_to_zero, extra_args=extra_args, callback=callback, disable=disable, ita=ita, c2=c2, noise_sampler=noise_sampler or get_noise_sampler(x, sigmas, noise_sampler_type, noise_sampler, extra_args), momentum=momentum, momentum_strategy=momentum_strategy)
+    return sample_refined_exp_s_v4(model, x, sigmas, denoise_to_zero=denoise_to_zero, extra_args=extra_args, callback=callback, disable=disable, ita=ita, c2=c2, noise_sampler=noise_sampler or get_noise_sampler(x, sigmas, noise_sampler_type=noise_sampler_type, extra_args=extra_args), momentum=momentum, momentum_strategy=momentum_strategy)
+
+def sample_res_solver_v5(model, x, sigmas, extra_args=None, callback=None, disable=None, noise_sampler_type="gaussian", noise_sampler=None, denoise_to_zero=True, c2=0.5, ita=0.0, momentum=0.4, momentum_strategy="adaptive"):
+    if torch.is_tensor(ita):
+        ita = ita.item()
+    return sample_refined_exp_s_v5(model, x, sigmas, denoise_to_zero=denoise_to_zero, extra_args=extra_args, callback=callback, disable=disable, ita=ita, c2=c2, noise_sampler=noise_sampler or get_noise_sampler(x, sigmas, noise_sampler_type=noise_sampler_type, extra_args=extra_args), momentum=momentum, momentum_strategy=momentum_strategy)
+
+def sample_res_solver_v6(model, x, sigmas, extra_args=None, callback=None, disable=None, noise_sampler_type="gaussian", noise_sampler=None, denoise_to_zero=True, c2=0.5, ita=0.0, momentum=0.4, momentum_strategy="adaptive"):
+    if torch.is_tensor(ita):
+        ita = ita.item()
+    return sample_refined_exp_s_v6(model, x, sigmas, denoise_to_zero=denoise_to_zero, extra_args=extra_args, callback=callback, disable=disable, ita=ita, c2=c2, noise_sampler=noise_sampler or get_noise_sampler(x, sigmas, noise_sampler_type=noise_sampler_type, extra_args=extra_args), momentum=momentum, momentum_strategy=momentum_strategy)
 
 @torch.no_grad()
 def sample_dpmpp_dualsde_momentum(model, x, sigmas, extra_args=None, callback=None, disable=None, eta=1., s_noise=1., noise_sampler=None, r=1/2, momentum=0.0):
@@ -673,18 +685,18 @@ def sample_dpmpp_dualsde_momentum(model, x, sigmas, extra_args=None, callback=No
     return x
 
 def sample_dpmpp_dualsdemomentum(model, x, sigmas, extra_args=None, callback=None, disable=None, eta=1., s_noise=1., noise_sampler_type="gaussian", noise_sampler=None, r=1/2, momentum=0.0):
-    return sample_dpmpp_dualsde_momentum(model, x, sigmas, extra_args=extra_args, callback=callback, disable=disable, eta=eta, s_noise=s_noise, noise_sampler=noise_sampler or get_noise_sampler(x, sigmas, noise_sampler_type, noise_sampler, extra_args), r=r, momentum=momentum)
+    return sample_dpmpp_dualsde_momentum(model, x, sigmas, extra_args=extra_args, callback=callback, disable=disable, eta=eta, s_noise=s_noise, noise_sampler=noise_sampler or get_noise_sampler(x, sigmas, noise_sampler_type=noise_sampler_type, extra_args=extra_args), r=r, momentum=momentum)
 
 from .other_samplers.sample_ttm import sample_ttm_jvp
 def sample_ttmcustom(model, x, sigmas, extra_args=None, callback=None, disable=None, eta=1., s_noise=1., noise_sampler_type="gaussian",noise_sampler=None):
-    return sample_ttm_jvp(model, x, sigmas, extra_args=extra_args, callback=callback, disable=disable, eta=eta, s_noise=s_noise, noise_sampler=noise_sampler or get_noise_sampler(x, sigmas, noise_sampler_type, noise_sampler, extra_args))
+    return sample_ttm_jvp(model, x, sigmas, extra_args=extra_args, callback=callback, disable=disable, eta=eta, s_noise=s_noise, noise_sampler=noise_sampler or get_noise_sampler(x, sigmas, noise_sampler_type=noise_sampler_type, extra_args=extra_args))
 
 from comfy.k_diffusion.sampling import sample_lcm
 def sample_lcmcustom(model, x, sigmas, extra_args=None, callback=None, disable=None, noise_sampler_type="gaussian", noise_sampler=None):
-    return sample_lcm(model, x, sigmas, extra_args=extra_args, callback=callback, disable=disable, noise_sampler=noise_sampler or get_noise_sampler(x, sigmas, noise_sampler_type, noise_sampler, extra_args))
+    return sample_lcm(model, x, sigmas, extra_args=extra_args, callback=callback, disable=disable, noise_sampler=noise_sampler or get_noise_sampler(x, sigmas, noise_sampler_type=noise_sampler_type, extra_args=extra_args))
 
 def sample_clyb_4m_sde(model, x, sigmas, extra_args=None, callback=None, disable=None, eta=1., s_noise=1., noise_sampler_type="brownian", noise_sampler=None, momentum=0.0):
-    return sample_clyb_4m_sde_momentumized(model, x, sigmas, extra_args=extra_args, callback=callback, disable=disable, eta=eta, s_noise=s_noise, noise_sampler=noise_sampler or get_noise_sampler(x, sigmas, noise_sampler_type, noise_sampler, extra_args), momentum=momentum)
+    return sample_clyb_4m_sde_momentumized(model, x, sigmas, extra_args=extra_args, callback=callback, disable=disable, eta=eta, s_noise=s_noise, noise_sampler=noise_sampler or get_noise_sampler(x, sigmas, noise_sampler_type=noise_sampler_type, extra_args=extra_args), momentum=momentum)
 
 
 # This code works, but I'm currently experimenting with different methods
@@ -735,7 +747,7 @@ def sampler_euler_ancestral_dancing(model, x, sigmas, extra_args=None, callback=
     return x
 
 def sample_euler_ancestral_dancing(model, x, sigmas, extra_args=None, callback=None, disable=None, eta=1., s_noise=1., noise_sampler_type="gaussian", noise_sampler=None, leap=2, eta_dance=1.0):
-    return sampler_euler_ancestral_dancing(model, x, sigmas, extra_args=extra_args, callback=callback, disable=disable, eta=eta, s_noise=s_noise, noise_sampler=noise_sampler or get_noise_sampler(x, sigmas, noise_sampler_type, noise_sampler, extra_args), leap=leap, eta_dance=eta_dance)
+    return sampler_euler_ancestral_dancing(model, x, sigmas, extra_args=extra_args, callback=callback, disable=disable, eta=eta, s_noise=s_noise, noise_sampler=noise_sampler or get_noise_sampler(x, sigmas, noise_sampler_type=noise_sampler_type, extra_args=extra_args), leap=leap, eta_dance=eta_dance)
 
 
 @torch.no_grad()
@@ -798,7 +810,7 @@ def sampler_dpmpp_3m_sde_dynamic_eta(model, x, sigmas, extra_args=None, callback
     return x
 
 def sample_dpmpp_3m_sde_dynamic_eta(model, x, sigmas, extra_args=None, callback=None, disable=None, eta_max=1.0, eta_min=0.0, s_noise=1., noise_sampler_type="brownian", noise_sampler=None):
-    return sampler_dpmpp_3m_sde_dynamic_eta(model, x, sigmas, extra_args=extra_args, callback=callback, disable=disable, eta_max=eta_max, eta_min=eta_min, s_noise=s_noise, noise_sampler=noise_sampler or get_noise_sampler(x, sigmas, noise_sampler_type, noise_sampler, extra_args))
+    return sampler_dpmpp_3m_sde_dynamic_eta(model, x, sigmas, extra_args=extra_args, callback=callback, disable=disable, eta_max=eta_max, eta_min=eta_min, s_noise=s_noise, noise_sampler=noise_sampler or get_noise_sampler(x, sigmas, noise_sampler_type=noise_sampler_type, extra_args=extra_args))
 
 
 from .other_samplers.refined_exp_solver import _de_second_order
@@ -1310,7 +1322,7 @@ def sampler_supreme(model, x, sigmas, extra_args=None, callback=None, disable=No
     return x
 
 def sample_supreme(model, x, sigmas, extra_args=None, callback=None, disable=None, s_noise=1., noise_sampler_type="gaussian", noise_sampler=None, eta=1.0, step_method="euler", substep_method="euler", centralization=0.05, normalization=0.05, edge_enhancement=0.25, perphist=0.5, substeps=2, noise_modulation="intensity", modulation_strength=2.0, modulation_dims=3, reversible_eta=1.0):
-    return sampler_supreme(model, x, sigmas, extra_args=extra_args, callback=callback, disable=disable, s_noise=s_noise, noise_sampler=noise_sampler or get_noise_sampler(x, sigmas, noise_sampler_type, noise_sampler, extra_args), eta=eta, step_method=step_method, substep_method=substep_method, centralization=centralization, normalization=normalization, edge_enhancement=edge_enhancement, perphist=perphist, substeps=substeps, noise_modulation=noise_modulation, modulation_strength=modulation_strength, modulation_dims=modulation_dims, reversible_eta=reversible_eta)
+    return sampler_supreme(model, x, sigmas, extra_args=extra_args, callback=callback, disable=disable, s_noise=s_noise, noise_sampler=noise_sampler or get_noise_sampler(x, sigmas, noise_sampler_type=noise_sampler_type, extra_args=extra_args), eta=eta, step_method=step_method, substep_method=substep_method, centralization=centralization, normalization=normalization, edge_enhancement=edge_enhancement, perphist=perphist, substeps=substeps, noise_modulation=noise_modulation, modulation_strength=modulation_strength, modulation_dims=modulation_dims, reversible_eta=reversible_eta)
 
 # Add your personal samplers below here, just for formatting purposes ;3
 
@@ -1318,6 +1330,8 @@ def sample_supreme(model, x, sigmas, extra_args=None, callback=None, disable=Non
 extra_samplers = {
     "res_momentumized": sample_res_solver,
     "res_momentumized_v4": sample_res_solver_v4,
+    "res_momentumized_v5": sample_res_solver_v5,
+    "res_momentumized_v6": sample_res_solver_v6,
     "dpmpp_dualsde_momentumized": sample_dpmpp_dualsdemomentum,
     "clyb_4m_sde_momentumized": sample_clyb_4m_sde,
     "ttm": sample_ttmcustom,

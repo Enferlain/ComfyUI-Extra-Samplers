@@ -56,6 +56,48 @@ class SamplerRES_MOMENTUMIZED_V4:
         sampler = comfy.samplers.ksampler("res_momentumized_v4", {"noise_sampler_type": noise_sampler_type, "denoise_to_zero": denoise_to_zero, "c2": c2, "ita": ita, "momentum": momentum, "momentum_strategy": momentum_strategy})
         return (sampler, )
 
+class SamplerRES_MOMENTUMIZED_V5:
+    @classmethod
+    def INPUT_TYPES(s):
+        return {"required":
+                    {"noise_sampler_type": (get_noise_sampler_names(), ),
+                     "momentum": ("FLOAT", {"default": 0.4, "min": 0.0, "max": 0.95, "step":0.01}),
+                     "momentum_strategy": (["adaptive", "cosine", "linear", "static"], ),
+                     "denoise_to_zero": ("BOOLEAN", {"default": True}),
+                     "ita": ("FLOAT", {"default": 0.0, "min": 0.0, "max": 1.0, "step":0.01, "round": False}),
+                     "c2": ("FLOAT", {"default": 0.5, "min": 0.01, "max": 1.0, "step":0.01, "round": False}),
+                      }
+               }
+    RETURN_TYPES = ("SAMPLER",)
+    CATEGORY = "sampling/custom_sampling/samplers"
+
+    FUNCTION = "get_sampler"
+
+    def get_sampler(self, noise_sampler_type, momentum, momentum_strategy, denoise_to_zero, ita, c2):
+        sampler = comfy.samplers.ksampler("res_momentumized_v5", {"noise_sampler_type": noise_sampler_type, "denoise_to_zero": denoise_to_zero, "c2": c2, "ita": ita, "momentum": momentum, "momentum_strategy": momentum_strategy})
+        return (sampler, )
+
+class SamplerRES_MOMENTUMIZED_V6:
+    @classmethod
+    def INPUT_TYPES(s):
+        return {"required":
+                    {"noise_sampler_type": (get_noise_sampler_names(), ),
+                     "momentum": ("FLOAT", {"default": 0.4, "min": 0.0, "max": 0.95, "step":0.01}),
+                     "momentum_strategy": (["adaptive", "cosine", "linear", "static"], ),
+                     "denoise_to_zero": ("BOOLEAN", {"default": True}),
+                     "ita": ("FLOAT", {"default": 0.0, "min": 0.0, "max": 1.0, "step":0.01, "round": False}),
+                     "c2": ("FLOAT", {"default": 0.5, "min": 0.01, "max": 1.0, "step":0.01, "round": False}),
+                      }
+               }
+    RETURN_TYPES = ("SAMPLER",)
+    CATEGORY = "sampling/custom_sampling/samplers"
+
+    FUNCTION = "get_sampler"
+
+    def get_sampler(self, noise_sampler_type, momentum, momentum_strategy, denoise_to_zero, ita, c2):
+        sampler = comfy.samplers.ksampler("res_momentumized_v6", {"noise_sampler_type": noise_sampler_type, "denoise_to_zero": denoise_to_zero, "c2": c2, "ita": ita, "momentum": momentum, "momentum_strategy": momentum_strategy})
+        return (sampler, )
+
 class SamplerDPMPP_DUALSDE_MOMENTUMIZED:
     @classmethod
     def INPUT_TYPES(s):
